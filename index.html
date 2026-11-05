@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nearest Hospital Finder | CT-363 DAA Project</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">+</span>
+        <span class="brand-name">Nearest Hospital Finder</span>
+      </div>
+      <nav class="main-nav" aria-label="Main navigation">
+        <button type="button" class="nav-link" data-view="dashboard">Dashboard</button>
+        <button type="button" class="nav-link" data-view="nearest">Find Nearest Hospital</button>
+        <button type="button" class="nav-link" data-view="search">Search by ID</button>
+        <button type="button" class="nav-link" data-view="directory">Hospital Directory</button>
+        <button type="button" class="nav-link" data-view="algorithms">Algorithms</button>
+        <button type="button" class="nav-link" data-view="tests">Tests</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- 1. DASHBOARD -->
+    <section id="view-dashboard" class="view">
+      <h1>Nearest Hospital Finder</h1>
+      <p class="subtitle">CT-363 Design and Analysis of Algorithms - University Project</p>
+
+      <div class="card">
+        <h2>Introduction</h2>
+        <p>
+          This application stores a fixed list of hospitals on a fictional 2D grid. It uses a
+          <strong>Brute Force</strong> algorithm (Chapter 3) to find the hospital nearest to a point
+          you enter, and <strong>Interpolation Search</strong> (Chapter 4) to look up a hospital by its ID.
+        </p>
+        <p class="note">All coordinates are fictional Cartesian values for academic testing. They are not real map locations.</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="card stat">
+          <span class="stat-label">Total Hospitals</span>
+          <span class="stat-value" id="total-hospitals">70</span>
+        </div>
+        <div class="card stat">
+          <span class="stat-label">ID Range</span>
+          <span class="stat-value" id="id-range">101 - 170</span>
+        </div>
+        <div class="card stat">
+          <span class="stat-label">Algorithms Used</span>
+          <span class="stat-value">2</span>
+        </div>
+      </div>
+
+      <h2>What would you like to do?</h2>
+      <div class="action-grid">
+        <button type="button" class="card action-card" data-view="nearest">
+          <strong>Find Nearest Hospital</strong>
+          <span>Enter X and Y and run Brute Force.</span>
+        </button>
+        <button type="button" class="card action-card" data-view="search">
+          <strong>Search by ID</strong>
+          <span>Look up a hospital with Interpolation Search.</span>
+        </button>
+        <button type="button" class="card action-card" data-view="directory">
+          <strong>Hospital Directory</strong>
+          <span>See all 70 hospitals in ID order.</span>
+        </button>
+        <button type="button" class="card action-card" data-view="algorithms">
+          <strong>Algorithms</strong>
+          <span>Explanations and complexity analysis.</span>
+        </button>
+        <button type="button" class="card action-card" data-view="tests">
+          <strong>Tests</strong>
+          <span>Run the executable test cases.</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 2. FIND NEAREST HOSPITAL -->
+    <section id="view-nearest" class="view" hidden>
+      <h1>Find Nearest Hospital</h1>
+      <p class="subtitle">Enter whole-number coordinates (negative values are allowed).</p>
+
+      <div class="card">
+        <form id="nearest-form" novalidate>
+          <div class="form-row">
+            <div class="field">
+              <label for="user-x">X coordinate</label>
+              <input type="text" id="user-x" inputmode="numeric" autocomplete="off" placeholder="e.g. 30">
+            </div>
+            <div class="field">
+              <label for="user-y">Y coordinate</label>
+              <input type="text" id="user-y" inputmode="numeric" autocomplete="off" placeholder="e.g. 40">
+            </div>
+            <button type="submit" class="btn">Find Nearest Hospital</button>
+          </div>
+        </form>
+        <div id="nearest-message" class="message" role="alert" hidden></div>
+      </div>
+
+      <div id="nearest-result" hidden>
+        <div class="card result-card">
+          <h2>Nearest Hospital</h2>
+          <dl class="result-list">
+            <div><dt>Hospital name</dt><dd id="nearest-name"></dd></div>
+            <div><dt>Hospital ID</dt><dd id="nearest-id"></dd></div>
+            <div><dt>Coordinates</dt><dd id="nearest-coords"></dd></div>
+            <div><dt>Actual distance</dt><dd id="nearest-distance"></dd></div>
+            <div><dt>Squared distance</dt><dd id="nearest-squared"></dd></div>
+            <div><dt>Hospitals compared</dt><dd id="nearest-comparisons"></dd></div>
+          </dl>
+        </div>
+
+        <div class="card">
+          <h2>Distance Comparison Table</h2>
+          <p class="note">All hospitals with their calculated distances. The nearest hospital is highlighted.</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>ID</th><th>Hospital</th><th>X</th><th>Y</th><th>Squared Distance</th><th>Distance</th></tr>
+              </thead>
+              <tbody id="nearest-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. SEARCH BY ID -->
+    <section id="view-search" class="view" hidden>
+      <h1>Search Hospital by ID</h1>
+      <p class="subtitle">Uses Interpolation Search on the sorted ID array (101 to 170).</p>
+
+      <div class="card">
+        <form id="search-form" novalidate>
+          <div class="form-row">
+            <div class="field">
+              <label for="search-id">Hospital ID</label>
+              <input type="text" id="search-id" inputmode="numeric" autocomplete="off" placeholder="e.g. 135">
+            </div>
+            <button type="submit" class="btn">Search</button>
+          </div>
+        </form>
+        <div id="search-message" class="message" role="alert" hidden></div>
+      </div>
+
+      <div id="search-result" hidden>
+        <div class="card result-card">
+          <h2>Hospital Search Result</h2>
+          <dl class="result-list">
+            <div><dt>Status</dt><dd id="search-status"></dd></div>
+            <div><dt>Hospital ID</dt><dd id="search-result-id"></dd></div>
+            <div><dt>Hospital name</dt><dd id="search-result-name"></dd></div>
+            <div><dt>X coordinate</dt><dd id="search-result-x"></dd></div>
+            <div><dt>Y coordinate</dt><dd id="search-result-y"></dd></div>
+          </dl>
+        </div>
+
+        <div class="card">
+          <h2>Search Steps</h2>
+          <p class="note">Each row is one estimate of the position x = l + &lfloor;((v - A[l])(r - l)) / (A[r] - A[l])&rfloor;.</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Step</th><th>l</th><th>r</th><th>x</th><th>A[x]</th></tr>
+              </thead>
+              <tbody id="search-steps-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. HOSPITAL DIRECTORY -->
+    <section id="view-directory" class="view" hidden>
+      <h1>Hospital Directory</h1>
+      <p class="subtitle">All hospitals in ascending ID order.</p>
+      <div class="card">
+        <p class="note">Fictional sample hospitals are invented records added for this project. All coordinates are fictional.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Hospital</th><th>X</th><th>Y</th><th>Record Type</th></tr>
+            </thead>
+            <tbody id="directory-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. ALGORITHMS -->
+    <section id="view-algorithms" class="view" hidden>
+      <h1>Algorithms</h1>
+      <p class="subtitle">Explanations and complexity analysis.</p>
+
+      <div class="card">
+        <h2>Brute Force (Chapter 3)</h2>
+        <p>Brute Force solves a problem by checking every possibility directly. Here, the distance from the user's point to every hospital is calculated and the smallest one is kept.</p>
+        <ol>
+          <li>Start with the first hospital as the current nearest hospital.</li>
+          <li>Calculate the squared distance from the user's point to each hospital.</li>
+          <li>Compare it with the current minimum distance.</li>
+          <li>If a smaller distance is found, update the nearest hospital.</li>
+          <li>If the distances are equal, keep the hospital with the smaller ID.</li>
+          <li>Repeat until all hospitals have been compared.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h2>Euclidean Distance</h2>
+        <p>The distance between two points (x1, y1) and (x2, y2) is:</p>
+        <p class="formula">d = &radic;((x1 - x2)&sup2; + (y1 - y2)&sup2;)</p>
+        <p>Because the square root keeps the same order (a smaller d&sup2; always means a smaller d), the program compares the <strong>squared distance</strong>:</p>
+        <p class="formula">d&sup2; = (x1 - x2)&sup2; + (y1 - y2)&sup2;</p>
+        <p>The square root is calculated only once, to display the final actual distance.</p>
+      </div>
+
+      <div class="card">
+        <h2>Closest-Pair Adaptation</h2>
+        <p>
+          The general Closest-Pair problem finds the two closest points among n points. Its brute-force
+          solution checks every pair, which takes O(n&sup2;) time. This project is an adaptation: it compares
+          only <strong>one</strong> user point against n hospitals, so it needs just n distance calculations
+          and runs in O(n) time.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>Interpolation Search (Chapter 4)</h2>
+        <p>Interpolation Search works on a sorted array. Instead of always probing the middle, it estimates where the key should be, based on its value:</p>
+        <p class="formula">x = l + &lfloor;((v - A[l]) &times; (r - l)) / (A[r] - A[l])&rfloor;</p>
+        <p>where <strong>x</strong> = estimated position, <strong>l</strong> = lower index, <strong>r</strong> = upper index, <strong>v</strong> = search key, <strong>A</strong> = sorted hospital ID array.</p>
+        <ol>
+          <li>Keep the hospital IDs sorted in ascending order.</li>
+          <li>Calculate x using the formula.</li>
+          <li>Compare v with A[x].</li>
+          <li>If they are equal, the hospital is found.</li>
+          <li>If v is smaller, set r = x - 1.</li>
+          <li>If v is greater, set l = x + 1.</li>
+          <li>Repeat until the hospital is found or the range becomes invalid.</li>
+        </ol>
+        <p>The search handles empty ranges, IDs below the minimum, IDs above the maximum, and division by zero (when A[r] = A[l]).</p>
+      </div>
+
+      <div class="card">
+        <h2>Variable-Size-Decrease</h2>
+        <p>
+          In a variable-size-decrease algorithm, the size of the problem is reduced by a different amount
+          at each step. In Interpolation Search the range l..r shrinks by an amount that depends on where
+          the estimate x lands and on the values in the array, not by a fixed half as in Binary Search.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>Complexity Analysis</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Algorithm</th><th>Case</th><th>Time</th><th>Auxiliary Space</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Brute Force (one point vs n hospitals)</td><td>All cases</td><td>O(n)</td><td>O(1)</td></tr>
+              <tr><td>General Closest-Pair (for comparison)</td><td>All cases</td><td>O(n&sup2;)</td><td>O(1)</td></tr>
+              <tr><td>Interpolation Search</td><td>Average (uniformly distributed IDs)</td><td>O(log log n)</td><td>O(1)</td></tr>
+              <tr><td>Interpolation Search</td><td>Worst case</td><td>O(n)</td><td>O(1)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">Auxiliary space excludes the data itself. The step table shown in the interface is extra display output and is not needed by the algorithms.</p>
+      </div>
+    </section>
+
+    <!-- 6. TESTS -->
+    <section id="view-tests" class="view" hidden>
+      <h1>Executable Tests</h1>
+      <p class="subtitle">Runs the real Brute Force, Interpolation Search and validation functions.</p>
+
+      <div class="card">
+        <button type="button" class="btn" id="run-tests-btn">Run All Tests</button>
+        <div id="tests-message" class="message" role="status" hidden></div>
+      </div>
+
+      <div id="tests-output" hidden>
+        <div class="stats-grid">
+          <div class="card stat"><span class="stat-label">Total Tests</span><span class="stat-value" id="tests-total">0</span></div>
+          <div class="card stat"><span class="stat-label">Passed</span><span class="stat-value pass-text" id="tests-passed">0</span></div>
+          <div class="card stat"><span class="stat-label">Failed</span><span class="stat-value fail-text" id="tests-failed">0</span></div>
+        </div>
+
+        <div class="card">
+          <h2>Individual Results</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Test ID</th><th>Category</th><th>Description</th><th>Input</th><th>Expected</th><th>Actual</th><th>Status</th></tr>
+              </thead>
+              <tbody id="tests-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">CT-363 Design and Analysis of Algorithms &middot; Fictional coordinates for academic testing only</div>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
