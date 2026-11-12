@@ -45,6 +45,18 @@ const tieHospitals = [
   { id: 4, name: "Tie Hospital A", x: 4, y: 3 }
 ];
 
+// Three hospitals at equal distance from (0, 0), listed in decreasing ID order
+const threeWayTieHospitals = [
+  { id: 9, name: "Tie Hospital C", x: 3, y: 4 },
+  { id: 4, name: "Tie Hospital B", x: 4, y: 3 },
+  { id: 2, name: "Tie Hospital A", x: -3, y: -4 }
+];
+
+function describeEmptyNearest() {
+  const result = findNearestHospital(1, 2, []);
+  return result === null ? "null" : "not null";
+}
+
 // An ID array with gaps, used to test a missing ID between existing IDs
 const gappedIds = [101, 105, 110, 120];
 
@@ -58,6 +70,8 @@ const testCases = [
   { id: "BF-05", group: "Brute Force", description: "Negative coordinates", input: "(-5, -5)", expected: "ID 141, distance 16.55", run: () => describeNearest(-5, -5, HOSPITALS) },
   { id: "BF-06", group: "Brute Force", description: "Far away from all hospitals", input: "(1000, 1000)", expected: "ID 144, distance 1285.52", run: () => describeNearest(1000, 1000, HOSPITALS) },
   { id: "BF-07", group: "Brute Force", description: "All hospitals are compared", input: "(50, 50)", expected: "70 comparisons", run: () => findNearestHospital(50, 50, HOSPITALS).comparisons + " comparisons" },
+  { id: "BF-08", group: "Brute Force", description: "Empty hospital list", input: "(1, 2) with no hospitals", expected: "null", run: () => describeEmptyNearest() },
+  { id: "BF-09", group: "Brute Force", description: "Three-way tie, smallest ID wins", input: "(0, 0) with IDs 9, 4 and 2", expected: "ID 2, distance 5.00", run: () => describeNearest(0, 0, threeWayTieHospitals) },
 
   // Interpolation Search
   { id: "IS-01", group: "Interpolation Search", description: "First hospital ID", input: "101", expected: "Found ID 101 (Jinnah Hospital)", run: () => describeSearch(101) },
@@ -70,6 +84,8 @@ const testCases = [
   { id: "IS-08", group: "Interpolation Search", description: "Single-element array (A[r] - A[l] = 0)", input: "105 in [105]", expected: "Found at index 0", run: () => describeIndexSearch([105], 105) },
   { id: "IS-09", group: "Interpolation Search", description: "Empty array", input: "105 in []", expected: "Not Found", run: () => describeIndexSearch([], 105) },
   { id: "IS-10", group: "Interpolation Search", description: "Every ID from 101 to 170", input: "101 ... 170", expected: "All 70 IDs found at correct index", run: () => searchAllIds() },
+  { id: "IS-11", group: "Interpolation Search", description: "Single-element array, key absent", input: "101 in [105]", expected: "Not Found", run: () => describeIndexSearch([105], 101) },
+  { id: "IS-12", group: "Interpolation Search", description: "Key below minimum in an array with gaps", input: "100 in [101, 105, 110, 120]", expected: "Not Found", run: () => describeIndexSearch(gappedIds, 100) },
 
   // Input Validation
   { id: "VAL-01", group: "Validation", description: "Empty input", input: "(empty)", expected: "Invalid", run: () => describeValidation("") },
@@ -78,11 +94,22 @@ const testCases = [
   { id: "VAL-04", group: "Validation", description: "Letters mixed with digits", input: "12abc", expected: "Invalid", run: () => describeValidation("12abc") },
   { id: "VAL-05", group: "Validation", description: "Decimal coordinate", input: "12.5", expected: "Invalid", run: () => describeValidation("12.5") },
   { id: "VAL-06", group: "Validation", description: "Special characters", input: "@#$", expected: "Invalid", run: () => describeValidation("@#$") },
-  { id: "VAL-07", group: "Validation", description: "Plus sign / exponent form", input: "+5", expected: "Invalid", run: () => describeValidation("+5") },
+  { id: "VAL-07", group: "Validation", description: "Plus sign", input: "+5", expected: "Invalid", run: () => describeValidation("+5") },
   { id: "VAL-08", group: "Validation", description: "Negative whole number", input: "-15", expected: "Valid (-15)", run: () => describeValidation("-15") },
   { id: "VAL-09", group: "Validation", description: "Positive whole number", input: "42", expected: "Valid (42)", run: () => describeValidation("42") },
-  { id: "VAL-10", group: "Validation", description: "Minus sign only", input: "-", expected: "Invalid", run: () => describeValidation("-") }
+  { id: "VAL-10", group: "Validation", description: "Minus sign only", input: "-", expected: "Invalid", run: () => describeValidation("-") },
+  { id: "VAL-11", group: "Validation", description: "Leading zeros", input: "007", expected: "Valid (7)", run: () => describeValidation("007") },
+  { id: "VAL-12", group: "Validation", description: "Surrounding spaces are trimmed", input: "(space)42(space)", expected: "Valid (42)", run: () => describeValidation(" 42 ") },
+  { id: "VAL-13", group: "Validation", description: "Exponent form", input: "1e3", expected: "Invalid", run: () => describeValidation("1e3") }
 ];
+
+// The original test suite is read-only: freeze the list and every case.
+for (const test of testCases) {
+  Object.freeze(test);
+}
+Object.freeze(testCases);
+
+export const ORIGINAL_TEST_COUNT = testCases.length;
 
 // Runs every test and returns the summary plus individual results
 export function runAllTests() {

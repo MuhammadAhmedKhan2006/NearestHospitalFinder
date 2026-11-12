@@ -1,0 +1,22 @@
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor and IDE settings
+.vscode/
+.idea/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*.swp
+
+# Local dependencies and caches (not used by this static project)
+node_modules/
+__pycache__/
+*.py[cod]
+
+# Test and coverage output
+coverage/

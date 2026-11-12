@@ -3,7 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f8f7">
   <title>Nearest Hospital Finder | CT-363 DAA Project</title>
+  <script>
+    (function () {
+      var theme = "light";
+      try {
+        var saved = localStorage.getItem("nhf.theme.v1");
+        if (saved === "light" || saved === "dark") {
+          theme = saved;
+        } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+          theme = "dark";
+        }
+      } catch (error) {
+        theme = "light";
+      }
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -14,14 +31,26 @@
         <span class="brand-mark" aria-hidden="true">+</span>
         <span class="brand-name">Nearest Hospital Finder</span>
       </div>
-      <nav class="main-nav" aria-label="Main navigation">
-        <button type="button" class="nav-link" data-view="dashboard">Dashboard</button>
-        <button type="button" class="nav-link" data-view="nearest">Find Nearest Hospital</button>
-        <button type="button" class="nav-link" data-view="search">Search by ID</button>
-        <button type="button" class="nav-link" data-view="directory">Hospital Directory</button>
-        <button type="button" class="nav-link" data-view="algorithms">Algorithms</button>
-        <button type="button" class="nav-link" data-view="tests">Tests</button>
-      </nav>
+      <div class="header-actions">
+        <nav class="main-nav" aria-label="Main navigation">
+          <button type="button" class="nav-link" data-view="dashboard">Dashboard</button>
+          <button type="button" class="nav-link" data-view="nearest">Find Nearest Hospital</button>
+          <button type="button" class="nav-link" data-view="search">Search by ID</button>
+          <button type="button" class="nav-link" data-view="directory">Hospital Directory</button>
+          <button type="button" class="nav-link" data-view="algorithms">Algorithms</button>
+          <button type="button" class="nav-link" data-view="tests">Tests</button>
+        </nav>
+        <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false" aria-label="Switch to dark mode">
+          <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"></path>
+          </svg>
+          <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+          </svg>
+          <span id="theme-toggle-label">Dark mode</span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -35,9 +64,11 @@
       <div class="card">
         <h2>Introduction</h2>
         <p>
-          This application stores a fixed list of hospitals on a fictional 2D grid. It uses a
+          This application stores hospitals on a fictional 2D grid. It uses a
           <strong>Brute Force</strong> algorithm (Chapter 3) to find the hospital nearest to a point
           you enter, and <strong>Interpolation Search</strong> (Chapter 4) to look up a hospital by its ID.
+          You can extend the dataset from the Hospital Directory, and your additions remain available
+          after a refresh in the same browser.
         </p>
         <p class="note">All coordinates are fictional Cartesian values for academic testing. They are not real map locations.</p>
       </div>
@@ -50,6 +81,10 @@
         <div class="card stat">
           <span class="stat-label">ID Range</span>
           <span class="stat-value" id="id-range">101 - 170</span>
+        </div>
+        <div class="card stat">
+          <span class="stat-label">User-Added Hospitals</span>
+          <span class="stat-value" id="added-hospital-count">0</span>
         </div>
         <div class="card stat">
           <span class="stat-label">Algorithms Used</span>
@@ -69,7 +104,7 @@
         </button>
         <button type="button" class="card action-card" data-view="directory">
           <strong>Hospital Directory</strong>
-          <span>See all 70 hospitals in ID order.</span>
+          <span>Browse all <span id="directory-action-count">70</span> hospitals and add new records.</span>
         </button>
         <button type="button" class="card action-card" data-view="algorithms">
           <strong>Algorithms</strong>
@@ -123,7 +158,7 @@
           <div class="table-wrap">
             <table>
               <thead>
-                <tr><th>ID</th><th>Hospital</th><th>X</th><th>Y</th><th>Squared Distance</th><th>Distance</th></tr>
+                <tr><th scope="col">Step</th><th scope="col">ID</th><th scope="col">Hospital</th><th scope="col">X</th><th scope="col">Y</th><th scope="col">Squared Distance</th><th scope="col">Distance</th></tr>
               </thead>
               <tbody id="nearest-table-body"></tbody>
             </table>
@@ -135,7 +170,7 @@
     <!-- 3. SEARCH BY ID -->
     <section id="view-search" class="view" hidden>
       <h1>Search Hospital by ID</h1>
-      <p class="subtitle">Uses Interpolation Search on the sorted ID array (101 to 170).</p>
+      <p class="subtitle">Uses Interpolation Search on the sorted ID array (<span id="search-id-range">101 - 170</span>).</p>
 
       <div class="card">
         <form id="search-form" novalidate>
@@ -168,7 +203,7 @@
           <div class="table-wrap">
             <table>
               <thead>
-                <tr><th>Step</th><th>l</th><th>r</th><th>x</th><th>A[x]</th></tr>
+                <tr><th scope="col">Step</th><th scope="col">l</th><th scope="col">r</th><th scope="col">x</th><th scope="col">A[x]</th></tr>
               </thead>
               <tbody id="search-steps-body"></tbody>
             </table>
@@ -180,13 +215,44 @@
     <!-- 4. HOSPITAL DIRECTORY -->
     <section id="view-directory" class="view" hidden>
       <h1>Hospital Directory</h1>
-      <p class="subtitle">All hospitals in ascending ID order.</p>
+      <p class="subtitle">All hospitals in ascending ID order. Showing <span id="directory-count">70</span> records.</p>
+
+      <div class="card add-hospital-card">
+        <h2>Add New Hospital</h2>
+        <p class="note">
+          Add a hospital to the active dataset. The ID must be unique, and both coordinates must be
+          whole numbers. New records are saved in this browser and are immediately used by both algorithms.
+        </p>
+        <form id="add-hospital-form" novalidate>
+          <div class="form-row">
+            <div class="field">
+              <label for="hospital-id">Hospital ID</label>
+              <input type="text" id="hospital-id" inputmode="numeric" autocomplete="off" placeholder="e.g. 171">
+            </div>
+            <div class="field field-wide">
+              <label for="hospital-name">Hospital name</label>
+              <input type="text" id="hospital-name" autocomplete="off" maxlength="80" placeholder="e.g. Ahmed Medical Center">
+            </div>
+            <div class="field">
+              <label for="hospital-x">X coordinate</label>
+              <input type="text" id="hospital-x" inputmode="numeric" autocomplete="off" placeholder="e.g. 20">
+            </div>
+            <div class="field">
+              <label for="hospital-y">Y coordinate</label>
+              <input type="text" id="hospital-y" inputmode="numeric" autocomplete="off" placeholder="e.g. 30">
+            </div>
+            <button type="submit" class="btn">Add Hospital</button>
+          </div>
+        </form>
+        <div id="add-hospital-message" class="message" role="alert" hidden></div>
+      </div>
+
       <div class="card">
-        <p class="note">Fictional sample hospitals are invented records added for this project. All coordinates are fictional.</p>
+        <p class="note">Fictional sample hospitals are invented records added for this project. User-added hospitals can be changed only by clearing this browser's saved data. All coordinates are fictional.</p>
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>ID</th><th>Hospital</th><th>X</th><th>Y</th><th>Record Type</th></tr>
+              <tr><th scope="col">ID</th><th scope="col">Hospital</th><th scope="col">X</th><th scope="col">Y</th><th scope="col">Record Type</th></tr>
             </thead>
             <tbody id="directory-body"></tbody>
           </table>
@@ -262,7 +328,7 @@
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>Algorithm</th><th>Case</th><th>Time</th><th>Auxiliary Space</th></tr>
+              <tr><th scope="col">Algorithm</th><th scope="col">Case</th><th scope="col">Time</th><th scope="col">Auxiliary Space</th></tr>
             </thead>
             <tbody>
               <tr><td>Brute Force (one point vs n hospitals)</td><td>All cases</td><td>O(n)</td><td>O(1)</td></tr>
@@ -279,28 +345,89 @@
     <!-- 6. TESTS -->
     <section id="view-tests" class="view" hidden>
       <h1>Executable Tests</h1>
-      <p class="subtitle">Runs the real Brute Force, Interpolation Search and validation functions.</p>
+      <p class="subtitle">Run the 34 read-only original tests, your saved custom tests, or both.</p>
 
       <div class="card">
-        <button type="button" class="btn" id="run-tests-btn">Run All Tests</button>
+        <h2>Run Tests</h2>
+        <div class="button-row">
+          <button type="button" class="btn" id="run-original-tests-btn">Run Original Tests</button>
+          <button type="button" class="btn" id="run-custom-tests-btn">Run Custom Tests</button>
+          <button type="button" class="btn" id="run-all-tests-btn">Run All Tests</button>
+        </div>
         <div id="tests-message" class="message" role="status" hidden></div>
+      </div>
+
+      <div class="card">
+        <h2>Add / Edit a Custom Test</h2>
+        <p class="note">
+          Custom tests call the real production functions using the active dataset, including user-added
+          hospitals. Expected output must match the actual text exactly: Brute Force uses
+          <code>ID 103, distance 0.00</code>; Interpolation Search uses
+          <code>Found ID 135 (Nazimabad Care Hospital)</code> or <code>Not Found</code>.
+          Custom tests are stored only in this browser with localStorage.
+        </p>
+        <form id="custom-test-form" novalidate>
+          <div class="form-row">
+            <div class="field">
+              <label for="custom-type">Test type</label>
+              <select id="custom-type">
+                <option value="nearest">Brute Force (nearest hospital)</option>
+                <option value="search">Interpolation Search (by ID)</option>
+              </select>
+            </div>
+            <div class="field" id="custom-x-field">
+              <label for="custom-x">X coordinate</label>
+              <input type="text" id="custom-x" inputmode="numeric" autocomplete="off" placeholder="e.g. 30">
+            </div>
+            <div class="field" id="custom-y-field">
+              <label for="custom-y">Y coordinate</label>
+              <input type="text" id="custom-y" inputmode="numeric" autocomplete="off" placeholder="e.g. 40">
+            </div>
+            <div class="field" id="custom-key-field" hidden>
+              <label for="custom-key">Hospital ID</label>
+              <input type="text" id="custom-key" inputmode="numeric" autocomplete="off" placeholder="e.g. 103">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field field-wide">
+              <label for="custom-expected">Expected output</label>
+              <input type="text" id="custom-expected" autocomplete="off" placeholder="ID 103, distance 0.00">
+            </div>
+            <button type="submit" class="btn" id="custom-submit-btn">Add Test</button>
+            <button type="button" class="btn btn-secondary" id="custom-cancel-btn" hidden>Cancel Edit</button>
+          </div>
+        </form>
+        <div id="custom-test-message" class="message" role="alert" hidden></div>
       </div>
 
       <div id="tests-output" hidden>
         <div class="stats-grid">
-          <div class="card stat"><span class="stat-label">Total Tests</span><span class="stat-value" id="tests-total">0</span></div>
+          <div class="card stat"><span class="stat-label">Total Tests (last run)</span><span class="stat-value" id="tests-total">0</span></div>
           <div class="card stat"><span class="stat-label">Passed</span><span class="stat-value pass-text" id="tests-passed">0</span></div>
           <div class="card stat"><span class="stat-label">Failed</span><span class="stat-value fail-text" id="tests-failed">0</span></div>
         </div>
 
         <div class="card">
-          <h2>Individual Results</h2>
+          <h2>Original Test Results <span class="badge badge-readonly">Read-only</span></h2>
           <div class="table-wrap">
             <table>
               <thead>
-                <tr><th>Test ID</th><th>Category</th><th>Description</th><th>Input</th><th>Expected</th><th>Actual</th><th>Status</th></tr>
+                <tr><th scope="col">Test ID</th><th scope="col">Category</th><th scope="col">Description</th><th scope="col">Input</th><th scope="col">Expected</th><th scope="col">Actual</th><th scope="col">Status</th></tr>
               </thead>
               <tbody id="tests-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Custom Test Results</h2>
+          <p class="note">Additional tests saved in localStorage. Edit or delete them below; original tests cannot be changed.</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th scope="col">Test ID</th><th scope="col">Type</th><th scope="col">Input</th><th scope="col">Expected</th><th scope="col">Actual</th><th scope="col">Status</th><th scope="col">Actions</th></tr>
+              </thead>
+              <tbody id="custom-tests-body"></tbody>
             </table>
           </div>
         </div>
