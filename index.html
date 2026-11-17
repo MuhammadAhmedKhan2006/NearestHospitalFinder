@@ -296,6 +296,37 @@
         </p>
       </div>
 
+      <!-- ===== NEW CODE START ===== -->
+      <div class="card">
+        <h2>Closest-Pair vs Nearest-Neighbour (Both Implemented)</h2>
+        <p>
+          This project implements <strong>two distinct Brute Force algorithms</strong> from Chapter 3:
+        </p>
+        <ol>
+          <li><strong>Nearest-Neighbour (O(n))</strong> — Find the hospital closest to a user-entered point.
+            Compares one fixed point against n hospitals (n comparisons).</li>
+          <li><strong>Closest-Pair (O(n&sup2;))</strong> — Find the two closest hospitals among all n hospitals.
+            Checks every pair (i, j) where i &lt; j, using n(n&minus;1)/2 comparisons.</li>
+        </ol>
+        <p>
+          Both use the same squared-distance formula d&sup2; = (x&minus;x)&sup2; + (y&minus;y)&sup2; to avoid square roots in the loop,
+          and both apply a tie-breaking rule. The Closest-Pair tie-breaker keeps the pair with the smaller sum of IDs.
+        </p>
+        <button type="button" class="btn" id="run-closest-pair-btn">Run Closest-Pair on Active Dataset</button>
+        <div id="closest-pair-message" class="message" role="alert" hidden></div>
+        <div id="closest-pair-result" hidden>
+          <h3 style="margin-top:16px;">Closest-Pair Result</h3>
+          <dl class="result-list">
+            <div><dt>Hospital 1</dt><dd id="cp-h1"></dd></div>
+            <div><dt>Hospital 2</dt><dd id="cp-h2"></dd></div>
+            <div><dt>Squared Distance</dt><dd id="cp-squared"></dd></div>
+            <div><dt>Actual Distance</dt><dd id="cp-distance"></dd></div>
+            <div><dt>Pairs Compared</dt><dd id="cp-comparisons"></dd></div>
+          </dl>
+        </div>
+      </div>
+      <!-- ===== NEW CODE END ===== -->
+
       <div class="card">
         <h2>Interpolation Search (Chapter 4)</h2>
         <p>Interpolation Search works on a sorted array. Instead of always probing the middle, it estimates where the key should be, based on its value:</p>
@@ -332,6 +363,9 @@
             <tbody>
               <tr><td>Brute Force (one point vs n hospitals)</td><td>All cases</td><td>O(n)</td><td>O(1)</td></tr>
               <tr><td>General Closest-Pair (for comparison)</td><td>All cases</td><td>O(n&sup2;)</td><td>O(1)</td></tr>
+              <!-- ===== NEW CODE START ===== -->
+              <tr><td>Closest-Pair (implemented — find 2 closest among n)</td><td>All cases</td><td>O(n&sup2;)</td><td>O(1)</td></tr>
+              <!-- ===== NEW CODE END ===== -->
               <tr><td>Interpolation Search</td><td>Average (uniformly distributed IDs)</td><td>O(log log n)</td><td>O(1)</td></tr>
               <tr><td>Interpolation Search</td><td>Worst case</td><td>O(n)</td><td>O(1)</td></tr>
             </tbody>
@@ -372,6 +406,9 @@
               <select id="custom-type">
                 <option value="nearest">Brute Force (nearest hospital)</option>
                 <option value="search">Interpolation Search (by ID)</option>
+                <!-- ===== NEW CODE START ===== -->
+                <option value="closestpair">Closest-Pair (two closest hospitals)</option>
+                <!-- ===== NEW CODE END ===== -->
               </select>
             </div>
             <div class="field" id="custom-x-field">

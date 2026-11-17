@@ -108,3 +108,62 @@ export function searchHospitalById(id, hospitals = HOSPITALS) {
     steps: result.steps
   };
 }
+
+// ===== NEW CODE START =====
+// ---------------------------------------------------------------
+// C. CLOSEST-PAIR ALGORITHM (Chapter 3 - Brute Force Closest-Pair)
+// Finds the TWO closest hospitals among n hospitals.
+// Checks every pair (i, j) where i < j -> n(n-1)/2 comparisons -> O(n^2) time.
+// Auxiliary space: O(1).
+// Tie-breaking rule: if two pairs have equal distance, keep the pair
+//   with the smaller sum of IDs (hospital1.id + hospital2.id).
+// Uses the existing squaredDistance() helper.
+// No Math.sqrt in the loop — only for the final distance display.
+// ---------------------------------------------------------------
+export function findClosestPair(hospitals = HOSPITALS) {
+  // Edge cases: need at least 2 hospitals to form a pair
+  if (!hospitals || hospitals.length < 2) {
+    return null;
+  }
+
+  let bestI = 0;
+  let bestJ = 1;
+  let minSquared = squaredDistance(hospitals[0].x, hospitals[0].y, hospitals[1].x, hospitals[1].y);
+  let bestSum = hospitals[0].id + hospitals[1].id;
+  let comparisons = 0;
+
+  // Check every pair (i, j) where i < j
+  for (let i = 0; i < hospitals.length - 1; i++) {
+    for (let j = i + 1; j < hospitals.length; j++) {
+      comparisons++;
+      const currentSquared = squaredDistance(hospitals[i].x, hospitals[i].y, hospitals[j].x, hospitals[j].y);
+
+      if (currentSquared < minSquared) {
+        // Found a smaller distance
+        minSquared = currentSquared;
+        bestI = i;
+        bestJ = j;
+        bestSum = hospitals[i].id + hospitals[j].id;
+      } else if (currentSquared === minSquared) {
+        // Tie: keep the pair with the smaller sum of IDs
+        const currentSum = hospitals[i].id + hospitals[j].id;
+        if (currentSum < bestSum) {
+          bestI = i;
+          bestJ = j;
+          bestSum = currentSum;
+        }
+      }
+    }
+  }
+
+  // comparisons was counted manually: n(n-1)/2 pairs were checked
+
+  return {
+    hospital1: hospitals[bestI],
+    hospital2: hospitals[bestJ],
+    squaredDistance: minSquared,
+    distance: Math.sqrt(minSquared), // square root only for the final display
+    comparisons: comparisons
+  };
+}
+// ===== NEW CODE END =====

@@ -5,11 +5,18 @@
 import { HOSPITALS } from "./hospitals.js";
 import { findNearestHospital, searchHospitalById } from "./algorithms.js";
 
+// ===== NEW CODE START =====
+import { findClosestPair } from "./algorithms.js";
+// ===== NEW CODE END =====
+
 export const STORAGE_KEY = "nhf.customTests.v1";
 
 export const CUSTOM_TEST_TYPES = {
   nearest: "Brute Force",
-  search: "Interpolation Search"
+  search: "Interpolation Search",
+  // ===== NEW CODE START =====
+  closestpair: "Closest-Pair"
+  // ===== NEW CODE END =====
 };
 
 export function isValidCustomTest(test) {
@@ -28,6 +35,12 @@ export function isValidCustomTest(test) {
   if (test.type === "nearest") {
     return Number.isInteger(test.x) && Number.isInteger(test.y);
   }
+  // ===== NEW CODE START =====
+  if (test.type === "closestpair") {
+    // Closest-Pair tests use the full active dataset (no extra input needed)
+    return true;
+  }
+  // ===== NEW CODE END =====
   return Number.isInteger(test.key);
 }
 
@@ -68,6 +81,11 @@ export function formatCustomInput(test) {
   if (test.type === "nearest") {
     return "(" + test.x + ", " + test.y + ")";
   }
+  // ===== NEW CODE START =====
+  if (test.type === "closestpair") {
+    return "Active dataset";
+  }
+  // ===== NEW CODE END =====
   return String(test.key);
 }
 
@@ -79,6 +97,16 @@ export function describeCustomActual(test, hospitals = HOSPITALS) {
     }
     return "ID " + result.hospital.id + ", distance " + result.distance.toFixed(2);
   }
+
+  // ===== NEW CODE START =====
+  if (test.type === "closestpair") {
+    const result = findClosestPair(hospitals);
+    if (result === null) {
+      return "null";
+    }
+    return "ID " + result.hospital1.id + " and ID " + result.hospital2.id + ", distance " + result.distance.toFixed(2);
+  }
+  // ===== NEW CODE END =====
 
   const result = searchHospitalById(test.key, hospitals);
   if (!result.found) {

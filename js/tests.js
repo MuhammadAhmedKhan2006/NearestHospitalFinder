@@ -7,6 +7,19 @@ import { HOSPITALS } from "./hospitals.js";
 import { findNearestHospital, interpolationSearch, searchHospitalById } from "./algorithms.js";
 import { validateWholeNumber } from "./validation.js";
 
+// ===== NEW CODE START =====
+import { findClosestPair } from "./algorithms.js";
+
+// Helper: turns a Closest-Pair result into a short text for comparison
+function describeClosestPair(hospitals) {
+  const result = findClosestPair(hospitals);
+  if (result === null) {
+    return "null";
+  }
+  return "ID " + result.hospital1.id + " and ID " + result.hospital2.id + ", distance " + result.distance.toFixed(2);
+}
+// ===== NEW CODE END =====
+
 // ---- helpers that turn a result into a short text for comparison ----
 function describeNearest(x, y, hospitals) {
   const result = findNearestHospital(x, y, hospitals);
@@ -86,6 +99,32 @@ const testCases = [
   { id: "IS-10", group: "Interpolation Search", description: "Every ID from 101 to 170", input: "101 ... 170", expected: "All 70 IDs found at correct index", run: () => searchAllIds() },
   { id: "IS-11", group: "Interpolation Search", description: "Single-element array, key absent", input: "101 in [105]", expected: "Not Found", run: () => describeIndexSearch([105], 101) },
   { id: "IS-12", group: "Interpolation Search", description: "Key below minimum in an array with gaps", input: "100 in [101, 105, 110, 120]", expected: "Not Found", run: () => describeIndexSearch(gappedIds, 100) },
+
+  // ===== NEW CODE START =====
+  // Closest-Pair Tests (Brute Force Closest-Pair, Chapter 3)
+  // CP-01: Closest pair in the 70-hospital dataset.
+  //   Hand-computed: ID 101 (10,20) and ID 105 (12,18) -> d2 = (10-12)^2+(20-18)^2 = 4+4 = 8 -> d = 2.83
+  { id: "CP-01", group: "Closest-Pair", description: "Closest pair in the 70-hospital dataset", input: "HOSPITALS (70 records)", expected: "ID 101 and ID 105, distance 2.83", run: () => describeClosestPair(HOSPITALS) },
+
+  // CP-02: Two hospitals at the same coordinates -> distance 0
+  { id: "CP-02", group: "Closest-Pair", description: "Two identical-coordinate hospitals (distance 0)", input: "(10,20) and (10,20)", expected: "ID 1 and ID 2, distance 0.00", run: () => describeClosestPair([{ id: 1, name: "A", x: 10, y: 20 }, { id: 2, name: "B", x: 10, y: 20 }]) },
+
+  // CP-03: Empty array -> null
+  { id: "CP-03", group: "Closest-Pair", description: "Empty array (fewer than 2 hospitals)", input: "[]", expected: "null", run: () => describeClosestPair([]) },
+
+  // CP-04: Single hospital -> null
+  { id: "CP-04", group: "Closest-Pair", description: "Single hospital (fewer than 2 hospitals)", input: "[ID 1 only]", expected: "null", run: () => describeClosestPair([{ id: 1, name: "A", x: 5, y: 5 }]) },
+
+  // CP-05: Two hospitals only -> returns that pair
+  { id: "CP-05", group: "Closest-Pair", description: "Two hospitals only (returns that pair)", input: "(0,0) and (3,4)", expected: "ID 1 and ID 2, distance 5.00", run: () => describeClosestPair([{ id: 1, name: "A", x: 0, y: 0 }, { id: 2, name: "B", x: 3, y: 4 }]) },
+
+  // CP-06: Tie case — two pairs with d2=25, tie-break by smaller sum of IDs.
+  //   Pair (1,5) sum=6, Pair (2,3) sum=5. Winner is (2,3) with sum 5.
+  { id: "CP-06", group: "Closest-Pair", description: "Tie: two pairs same distance, smaller ID sum wins", input: "IDs 1,5,2,3 (two pairs at d2=25)", expected: "ID 2 and ID 3, distance 5.00", run: () => describeClosestPair([{ id: 1, name: "A", x: 0, y: 0 }, { id: 5, name: "E", x: 3, y: 4 }, { id: 2, name: "B", x: 10, y: 0 }, { id: 3, name: "C", x: 13, y: 4 }]) },
+
+  // CP-07: Verify comparisons count = n(n-1)/2 for 70 hospitals = 2415
+  { id: "CP-07", group: "Closest-Pair", description: "Comparisons count = n(n-1)/2 (70 hospitals = 2415)", input: "HOSPITALS (70 records)", expected: "2415 comparisons", run: () => findClosestPair(HOSPITALS).comparisons + " comparisons" },
+  // ===== NEW CODE END =====
 
   // Input Validation
   { id: "VAL-01", group: "Validation", description: "Empty input", input: "(empty)", expected: "Invalid", run: () => describeValidation("") },

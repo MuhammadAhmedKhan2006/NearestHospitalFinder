@@ -20,6 +20,10 @@ import {
   runCustomTests as executeCustomTests
 } from "./customTests.js";
 
+// ===== NEW CODE START =====
+import { findClosestPair } from "./algorithms.js";
+// ===== NEW CODE END =====
+
 const VIEW_NAMES = ["dashboard", "nearest", "search", "directory", "algorithms", "tests"];
 const THEME_STORAGE_KEY = "nhf.theme.v1";
 let testsHaveRun = false;
@@ -325,6 +329,65 @@ function handleAddHospitalSubmit(event) {
 // ---------- tests ----------
 let lastCustomResults = [];
 
+// ===== NEW CODE START =====
+// ---------- closest-pair ----------
+function handleClosestPairClick() {
+  const result = findClosestPair(activeHospitals);
+  const resultBox = byId("closest-pair-result");
+  if (result === null) {
+    resultBox.hidden = true;
+    showMessage("closest-pair-message", "error", "Closest-Pair requires at least two hospitals.");
+    return;
+  }
+
+  byId("cp-h1").textContent = result.hospital1.name + " (ID " + result.hospital1.id + ") at (" + result.hospital1.x + ", " + result.hospital1.y + ")";
+  byId("cp-h2").textContent = result.hospital2.name + " (ID " + result.hospital2.id + ") at (" + result.hospital2.x + ", " + result.hospital2.y + ")";
+  byId("cp-squared").textContent = result.squaredDistance;
+  byId("cp-distance").textContent = result.distance.toFixed(2) + " units";
+  byId("cp-comparisons").textContent = result.comparisons;
+
+  resultBox.hidden = false;
+  showMessage(
+    "closest-pair-message",
+    "success",
+    "Closest pair found: " + result.hospital1.name + " (ID " + result.hospital1.id + ") and " + result.hospital2.name + " (ID " + result.hospital2.id + "), " + result.distance.toFixed(2) + " units apart (" + result.comparisons + " pairs compared)."
+  );
+}
+// ===== NEW CODE END =====
+
+// ===== NEW CODE START =====
+function updateClosestPairTypeFields() {
+  if (byId("custom-type").value !== "closestpair") {
+    return;
+  }
+  byId("custom-x-field").hidden = true;
+  byId("custom-y-field").hidden = true;
+  byId("custom-key-field").hidden = true;
+  byId("custom-expected").placeholder = "ID 101 and ID 105, distance 2.83";
+}
+
+function handleClosestPairKeyFallback() {
+  if (byId("custom-type").value !== "closestpair") {
+    return;
+  }
+  // Closest-Pair ignores the key field; supply a harmless placeholder so the
+  // existing whole-number validation in handleCustomSubmit still passes.
+  const keyInput = byId("custom-key");
+  if (keyInput.value.trim() === "") {
+    keyInput.value = "0";
+  }
+}
+
+function setupClosestPairCustomSupport() {
+  byId("custom-type").addEventListener("change", updateClosestPairTypeFields);
+  byId("custom-test-form").addEventListener("submit", handleClosestPairKeyFallback, true);
+  byId("custom-tests-body").addEventListener("click", function () {
+    window.setTimeout(updateClosestPairTypeFields, 0);
+  });
+  updateClosestPairTypeFields();
+}
+// ===== NEW CODE END =====
+
 function statusBadge(passed) {
   return '<span class="badge ' + (passed ? "badge-found" : "badge-missing") + '">' + (passed ? "PASS" : "FAIL") + "</span>";
 }
@@ -606,6 +669,10 @@ function startApp() {
   byId("run-custom-tests-btn").addEventListener("click", runCustomOnly);
   byId("run-all-tests-btn").addEventListener("click", runEverything);
   setupCustomTestForm();
+  // ===== NEW CODE START =====
+  byId("run-closest-pair-btn").addEventListener("click", handleClosestPairClick);
+  setupClosestPairCustomSupport();
+  // ===== NEW CODE END =====
   showView(location.hash.replace("#", ""));
 }
 
